@@ -119,13 +119,25 @@ export async function startRecording() {
  * Intended as a fallback when Azure is unavailable.
  * @returns {Promise<{ transcript: string, confidence: number }>}
  */
-export function listenForSpeech() {
+export async function listenForSpeech() {
+  // Request microphone permission first (required for PWA on Android)
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    // Release immediately — SpeechRecognition will open its own stream
+    stream.getTracks().forEach(t => t.stop());
+  } catch (err) {
+    if (err.name === 'NotAllowedError') {
+      throw new Error('マイクの使用が許可されていません。ブラウザの設定でマイクを許可してください。');
+    }
+    throw new Error(`マイクにアクセスできません: ${err.message}`);
+  }
+
   return new Promise((resolve, reject) => {
     const SpeechRecognition =
       window.SpeechRecognition || window.webkitSpeechRecognition;
 
     if (!SpeechRecognition) {
-      reject(new Error('SpeechRecognition is not supported in this browser.'));
+      reject(new Error('このブラウザは音声認識に対応していません。Chrome または Edge をお使いください。'));
       return;
     }
 
@@ -133,8 +145,13 @@ export function listenForSpeech() {
     recognition.lang = 'en-US';
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
+    recognition.continuous = false;
+
+    let settled = false;
 
     recognition.onresult = (e) => {
+      if (settled) return;
+      settled = true;
       const result = e.results[0]?.[0];
       if (result) {
         resolve({
@@ -142,23 +159,39 @@ export function listenForSpeech() {
           confidence: result.confidence ?? 0.8
         });
       } else {
-        reject(new Error('No speech result received.'));
+        reject(new Error('音声を認識できませんでした。'));
       }
     };
 
     recognition.onerror = (e) => {
-      const msg = e.error === 'no-speech'
-        ? 'No speech was detected. Please try again.'
-        : `Speech recognition error: ${e.error}`;
-      reject(new Error(msg));
+      if (settled) return;
+      settled = true;
+      const messages = {
+        'no-speech': '音声が検出されませんでした。もう一度お試しください。',
+        'audio-capture': 'マイクが見つかりません。マイクを接続してください。',
+        'not-allowed': 'マイクの使用が許可されていません。',
+        'network': 'ネットワークエラーです。インターネット接続を確認してください。',
+        'aborted': '音声認識が中断されました。',
+        'service-not-available': '音声認識サービスが利用できません。'
+      };
+      reject(new Error(messages[e.error] || `音声認識エラー: ${e.error}`));
     };
 
     recognition.onend = () => {
-      // If onresult did not fire before onend, the promise was already settled.
-      // This handler is intentionally left as a no-op.
+      if (!settled) {
+        settled = true;
+        reject(new Error('音声が検出されませんでした。もう一度お試しください。'));
+      }
     };
 
-    recognition.start();
+    try {
+      recognition.start();
+    } catch (err) {
+      if (!settled) {
+        settled = true;
+        reject(new Error(`音声認識を開始できません: ${err.message}`));
+      }
+    }
   });
 }
 

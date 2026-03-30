@@ -819,8 +819,26 @@ details[open] .toggle-arrow {
   align-content: flex-start;
 }
 
-/* Word spans (added by scoring.js) */
-.word-diff {
+/* Diff rows (Target vs You) */
+.diff-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  align-items: center;
+  padding: var(--space-1) 0;
+}
+
+.diff-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  min-width: 54px;
+  font-family: monospace;
+}
+
+/* Word spans */
+.word-diff,
+.diff-word {
   display: inline-block;
   padding: 3px 8px;
   border-radius: var(--radius-sm);
@@ -830,21 +848,29 @@ details[open] .toggle-arrow {
   transition: opacity var(--transition-fast);
 }
 
-.word-diff--match {
+.word-diff--match,
+.diff-word--match {
   background: var(--color-success-light);
   color: var(--color-success);
 }
 
-.word-diff--miss {
+.word-diff--miss,
+.diff-word--miss {
   background: var(--color-error-light);
   color: var(--color-error);
   text-decoration: line-through;
   text-decoration-thickness: 2px;
 }
 
-.word-diff--extra {
+.word-diff--extra,
+.diff-word--extra {
   background: var(--color-warning-light);
   color: var(--color-warning);
+}
+
+.diff-word--warn {
+  background: #fff7ed;
+  color: #ea580c;
 }
 
 .diff-legend {

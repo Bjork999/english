@@ -556,21 +556,40 @@ function displayResults(result, transcript) {
 
 function renderSimpleDiff(words) {
   el.diffWords.innerHTML = '';
-  words.forEach(w => {
+
+  // Row 1: Target phrase (show matched words green, omitted words red)
+  const targetRow = document.createElement('div');
+  targetRow.className = 'diff-row';
+  const targetLabel = document.createElement('span');
+  targetLabel.className = 'diff-label';
+  targetLabel.textContent = 'Target: ';
+  targetRow.appendChild(targetLabel);
+
+  words.filter(w => w.errorType !== 'Insertion').forEach(w => {
     const span = document.createElement('span');
     span.className = 'diff-word';
     span.textContent = w.word;
-
-    if (w.errorType === 'None') {
-      span.classList.add('diff-word--match');
-    } else if (w.errorType === 'Omission') {
-      span.classList.add('diff-word--miss');
-    } else {
-      span.classList.add('diff-word--extra');
-    }
-
-    el.diffWords.appendChild(span);
+    span.classList.add(w.errorType === 'None' ? 'diff-word--match' : 'diff-word--miss');
+    targetRow.appendChild(span);
   });
+  el.diffWords.appendChild(targetRow);
+
+  // Row 2: User speech (show matched words green, extra words orange)
+  const userRow = document.createElement('div');
+  userRow.className = 'diff-row';
+  const userLabel = document.createElement('span');
+  userLabel.className = 'diff-label';
+  userLabel.textContent = 'You:      ';
+  userRow.appendChild(userLabel);
+
+  words.filter(w => w.errorType !== 'Omission').forEach(w => {
+    const span = document.createElement('span');
+    span.className = 'diff-word';
+    span.textContent = w.word;
+    span.classList.add(w.errorType === 'None' ? 'diff-word--match' : 'diff-word--extra');
+    userRow.appendChild(span);
+  });
+  el.diffWords.appendChild(userRow);
 }
 
 function renderAzureDiff(words) {
@@ -719,8 +738,13 @@ function setupEventListeners() {
   });
 
   // Record button
-  el.recordBtn.addEventListener('click', () => {
-    handleRecord();
+  el.recordBtn.addEventListener('click', async () => {
+    try {
+      await handleRecord();
+    } catch (err) {
+      setRecordingState(false);
+      showToast(`録音エラー: ${err.message}`);
+    }
   });
 
   // Speed toggle
