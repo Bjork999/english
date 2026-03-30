@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#2563eb">
+  <meta name="description" content="English pronunciation training with AI feedback">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="English Trainer">
+  <title>English Trainer</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" href="icon-192.png">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ============================================================
+       HEADER
+  ============================================================ -->
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="header-left">
+        <h1 class="app-title">
+          <span class="app-title-icon">🎯</span>
+          English Trainer
+        </h1>
+      </div>
+
+      <div class="header-right">
+        <!-- Mode toggle -->
+        <div class="mode-toggle-wrap" title="モード切替">
+          <span class="mode-label mode-label--simple" id="modeLabelSimple">簡易</span>
+          <label class="toggle-switch" for="modeToggle" aria-label="Azure精密モードに切替">
+            <input type="checkbox" id="modeToggle" role="switch" aria-checked="false">
+            <span class="toggle-track">
+              <span class="toggle-thumb"></span>
+            </span>
+          </label>
+          <span class="mode-label mode-label--azure" id="modeLabelAzure">Azure精密</span>
+        </div>
+
+        <!-- Azure remaining time -->
+        <div class="azure-time" id="azureTimeDisplay" aria-label="Azure残り時間">
+          <span class="azure-time-icon">☁️</span>
+          <span class="azure-time-text" id="azureTimeText">5h00m / 5h00m</span>
+        </div>
+
+        <!-- Settings gear -->
+        <button class="btn-icon" id="settingsBtn" aria-label="設定を開く" title="設定">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============================================================
+       MAIN CONTENT
+  ============================================================ -->
+  <main class="app-main" id="appMain">
+
+    <!-- Category tabs -->
+    <nav class="category-tabs" role="tablist" aria-label="カテゴリー選択">
+      <button class="tab-btn tab-btn--active" id="tabTech" role="tab" aria-selected="true" data-category="tech">
+        💻 Tech
+      </button>
+      <button class="tab-btn" id="tabTourism" role="tab" aria-selected="false" data-category="tourism">
+        ✈️ Tourism
+      </button>
+    </nav>
+
+    <!-- Subcategory chips -->
+    <div class="subcategory-row" id="subcategoryRow" role="navigation" aria-label="サブカテゴリー">
+      <div class="subcategory-chips" id="subcategoryChips">
+        <!-- Populated by JS -->
+        <button class="chip chip--active" data-sub="github">GitHub</button>
+        <button class="chip" data-sub="errors">Errors</button>
+        <button class="chip" data-sub="bios">BIOS</button>
+        <button class="chip" data-sub="cli">CLI</button>
+        <button class="chip" data-sub="docker">Docker</button>
+        <button class="chip" data-sub="api">API</button>
+        <button class="chip" data-sub="database">Database</button>
+        <button class="chip" data-sub="security">Security</button>
+      </div>
+    </div>
+
+    <!-- ---- Phrase Card ---- -->
+    <article class="phrase-card" id="phraseCard" aria-live="polite" aria-label="フレーズカード">
+
+      <!-- Phrase number badge -->
+      <div class="phrase-meta">
+        <span class="phrase-badge" id="phraseBadge">Tech &gt; GitHub</span>
+        <span class="phrase-difficulty" id="phraseDifficulty" aria-label="難易度">★★☆</span>
+      </div>
+
+      <!-- English phrase -->
+      <p class="phrase-english" id="phraseEnglish" lang="en">
+        Could you open a pull request for this branch?
+      </p>
+
+      <!-- Japanese translation -->
+      <p class="phrase-japanese" id="phraseJapanese">
+        このブランチのプルリクエストを開いてもらえますか？
+      </p>
+
+      <!-- Word breakdown (collapsible) -->
+      <details class="word-breakdown" id="wordBreakdown">
+        <summary class="word-breakdown-toggle">
+          <span class="toggle-arrow">▶</span>
+          単語の分解
+        </summary>
+        <div class="word-breakdown-body" id="wordBreakdownBody">
+          <!-- Populated by JS -->
+          <div class="word-row">
+            <span class="word-term">pull request</span>
+            <span class="word-meaning">プルリクエスト</span>
+            <span class="word-note">GitHub用語：変更をレビュー依頼するもの</span>
+          </div>
+          <div class="word-row">
+            <span class="word-term">branch</span>
+            <span class="word-meaning">ブランチ</span>
+            <span class="word-note">コードの分岐点・作業ライン</span>
+          </div>
+          <div class="word-row">
+            <span class="word-term">open</span>
+            <span class="word-meaning">開く / 作成する</span>
+            <span class="word-note">ここでは「作成する」の意味</span>
+          </div>
+        </div>
+      </details>
+
+      <!-- Context / scene -->
+      <div class="phrase-context" id="phraseContext">
+        <span class="context-icon">🎬</span>
+        <span class="context-text" id="phraseContextText">
+          チームでのコードレビュー依頼時。リモートワーク中のSlackやZoomでの一言。
+        </span>
+      </div>
+
+    </article>
+
+    <!-- ---- Action Buttons ---- -->
+    <section class="action-area" aria-label="操作パネル">
+
+      <div class="action-buttons">
+        <!-- Play TTS button -->
+        <button class="btn-circle btn-play" id="playBtn" aria-label="フレーズを再生" title="再生">
+          <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+          </svg>
+        </button>
+
+        <!-- Record button -->
+        <button class="btn-circle btn-record" id="recordBtn" aria-label="録音開始" title="録音">
+          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+            <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+          </svg>
+          <span class="record-label" id="recordLabel">録音</span>
+        </button>
+
+        <!-- Speed toggle -->
+        <button class="btn-speed" id="speedBtn" aria-label="再生速度切替" title="速度切替" aria-pressed="false">
+          <span class="speed-value" id="speedValue">1x</span>
+          <span class="speed-hint">速度</span>
+        </button>
+      </div>
+
+      <!-- Recording indicator -->
+      <div class="recording-indicator" id="recordingIndicator" aria-live="assertive" aria-hidden="true">
+        <span class="recording-dot"></span>
+        <span class="recording-text">録音中... 話し終わったらボタンを押してください</span>
+      </div>
+
+    </section>
+
+    <!-- ---- Result Area ---- -->
+    <section class="result-area" id="resultArea" aria-live="polite" aria-label="採点結果" hidden>
+
+      <!-- Recognized speech -->
+      <div class="result-speech">
+        <span class="result-label">あなたの発音：</span>
+        <p class="result-text" id="recognizedText"></p>
+      </div>
+
+      <!-- Score -->
+      <div class="score-display">
+        <div class="score-circle" id="scoreCircle" aria-label="スコア">
+          <span class="score-number" id="scoreNumber">85</span>
+          <span class="score-percent">%</span>
+        </div>
+        <div class="score-info">
+          <span class="score-label-text" id="scoreLabelText">Great!</span>
+          <p class="score-sub">発音スコア</p>
+        </div>
+      </div>
+
+      <!-- Diff display -->
+      <div class="diff-display" id="diffDisplay" aria-label="単語比較">
+        <p class="diff-title">単語比較:</p>
+        <div class="diff-words" id="diffWords">
+          <!-- Populated by scoring.js -->
+        </div>
+        <div class="diff-legend">
+          <span class="diff-legend-item diff-legend--match">一致</span>
+          <span class="diff-legend-item diff-legend--miss">未発音</span>
+          <span class="diff-legend-item diff-legend--extra">余分</span>
+        </div>
+      </div>
+
+      <!-- Azure phoneme feedback (Azure mode only) -->
+      <div class="azure-feedback" id="azureFeedback" hidden>
+        <p class="azure-feedback-title">音素フィードバック:</p>
+        <div class="phoneme-tags" id="phonemeTags">
+          <!-- Populated by azure-speech.js -->
+        </div>
+
+        <!-- Fluency / Completeness bars -->
+        <div class="score-bars" id="scoreBars">
+          <div class="score-bar-row">
+            <span class="score-bar-label">流暢さ</span>
+            <div class="score-bar-track" role="progressbar" aria-label="流暢さスコア">
+              <div class="score-bar-fill score-bar-fill--fluency" id="fluencyBar" style="width: 0%"></div>
+            </div>
+            <span class="score-bar-value" id="fluencyValue">–</span>
+          </div>
+          <div class="score-bar-row">
+            <span class="score-bar-label">完全性</span>
+            <div class="score-bar-track" role="progressbar" aria-label="完全性スコア">
+              <div class="score-bar-fill score-bar-fill--completeness" id="completenessBar" style="width: 0%"></div>
+            </div>
+            <span class="score-bar-value" id="completenessValue">–</span>
+          </div>
+          <div class="score-bar-row">
+            <span class="score-bar-label">正確さ</span>
+            <div class="score-bar-track" role="progressbar" aria-label="正確さスコア">
+              <div class="score-bar-fill score-bar-fill--accuracy" id="accuracyBar" style="width: 0%"></div>
+            </div>
+            <span class="score-bar-value" id="accuracyValue">–</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation buttons -->
+      <div class="result-actions">
+        <button class="btn btn--secondary" id="tryAgainBtn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="1 4 1 10 7 10"/>
+            <path d="M3.51 15a9 9 0 1 0 .49-3.85"/>
+          </svg>
+          もう一度
+        </button>
+        <button class="btn btn--primary" id="nextPhraseBtn">
+          次のフレーズ
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="5" y1="12" x2="19" y2="12"/>
+            <polyline points="12 5 19 12 12 19"/>
+          </svg>
+        </button>
+      </div>
+
+    </section>
+
+    <!-- ---- Progress Bar ---- -->
+    <section class="progress-section" aria-label="今日の進捗">
+      <div class="progress-info">
+        <span class="progress-text" id="progressText">12 / 45 フレーズ完了</span>
+        <span class="progress-pct" id="progressPct">27%</span>
+      </div>
+      <div class="progress-track" role="progressbar" aria-valuenow="27" aria-valuemin="0" aria-valuemax="100" aria-label="今日の進捗">
+        <div class="progress-fill" id="progressFill" style="width: 27%"></div>
+      </div>
+      <p class="progress-streak" id="progressStreak">🔥 3日連続練習中！</p>
+    </section>
+
+  </main>
+
+  <!-- ============================================================
+       SETTINGS MODAL
+  ============================================================ -->
+  <div class="modal-overlay" id="settingsModal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle" hidden>
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 class="modal-title" id="settingsTitle">設定</h2>
+        <button class="btn-icon modal-close" id="settingsCloseBtn" aria-label="設定を閉じる">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+
+        <!-- Azure Status badge -->
+        <div class="azure-status" id="azureStatus">
+          <span class="azure-status-dot" id="azureStatusDot"></span>
+          <span class="azure-status-text" id="azureStatusText">Azure未設定</span>
+        </div>
+
+        <!-- API Key -->
+        <div class="form-group">
+          <label class="form-label" for="azureKeyInput">Azure Speech API キー</label>
+          <div class="input-wrap">
+            <input
+              type="password"
+              class="form-input"
+              id="azureKeyInput"
+              placeholder="例: a1b2c3d4e5f6..."
+              autocomplete="new-password"
+              spellcheck="false"
+            >
+            <button class="btn-input-toggle" id="toggleKeyVisibility" aria-label="APIキーの表示切替" type="button">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
+          </div>
+          <p class="form-hint">Azureポータルのリソースキーを入力</p>
+        </div>
+
+        <!-- Region -->
+        <div class="form-group">
+          <label class="form-label" for="azureRegionInput">Azure リージョン</label>
+          <input
+            type="text"
+            class="form-input"
+            id="azureRegionInput"
+            placeholder="例: japaneast"
+            autocomplete="off"
+            spellcheck="false"
+          >
+          <p class="form-hint">例: eastus / japaneast / westeurope</p>
+        </div>
+
+        <!-- Time budget -->
+        <div class="form-group">
+          <label class="form-label" for="timeBudgetInput">月間時間予算 (分)</label>
+          <input
+            type="number"
+            class="form-input"
+            id="timeBudgetInput"
+            placeholder="300"
+            min="60"
+            max="1440"
+            value="300"
+          >
+          <p class="form-hint">Azureの無料枠に合わせて設定 (デフォルト: 300分)</p>
+        </div>
+
+        <!-- Save button -->
+        <button class="btn btn--primary btn--full" id="saveSettingsBtn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+            <polyline points="17 21 17 13 7 13 7 21"/>
+            <polyline points="7 3 7 8 15 8"/>
+          </svg>
+          保存する
+        </button>
+
+        <!-- Save confirmation -->
+        <p class="save-confirm" id="saveConfirm" hidden>✅ 設定を保存しました</p>
+
+        <!-- Danger zone -->
+        <details class="danger-zone">
+          <summary class="danger-zone-toggle">データ管理</summary>
+          <div class="danger-zone-body">
+            <button class="btn btn--danger btn--full" id="resetProgressBtn">
+              進捗データをリセット
+            </button>
+            <p class="danger-hint">この操作は元に戻せません</p>
+          </div>
+        </details>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast notification -->
+  <div class="toast" id="toast" role="alert" aria-live="assertive" aria-hidden="true"></div>
+
+  <!-- Service Worker Registration -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(reg => console.log('[SW] Registered:', reg.scope))
+          .catch(err => console.warn('[SW] Registration failed:', err));
+      });
+    }
+  </script>
+
+  <!-- ============================================================
+       SCRIPTS (modules)
+  ============================================================ -->
+  <script type="module" src="config.js"></script>
+  <script type="module" src="phrases.js"></script>
+  <script type="module" src="speech.js"></script>
+  <script type="module" src="azure-speech.js"></script>
+  <script type="module" src="scoring.js"></script>
+  <script type="module" src="progress.js"></script>
+  <script type="module" src="app.js"></script>
+
+</body>
+</html>

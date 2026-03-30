@@ -1,0 +1,7 @@
+logs/
+.claude/
+.playwright-mcp/
+*.png
+!icons/*.png
+generate-icons.html
+node_modules/
